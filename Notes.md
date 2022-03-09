@@ -26,3 +26,6 @@
 ##Miscelenious
 - Dataset with stereoscopic images and ground truth: https://vision.middlebury.edu/stereo/data/scenes2003/ 
 
+
+APPARENTLY THIS WORKED: https://github.com/shimat/opencvsharp/issues/846
+
