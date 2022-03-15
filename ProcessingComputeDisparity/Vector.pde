@@ -6,4 +6,10 @@ public class Vector {
     this.y = y; 
     this.z = z;
   }
+  
+  void scale(float r) {
+    x *= r;
+    y *= r;
+    z *= r;
+  }
 }

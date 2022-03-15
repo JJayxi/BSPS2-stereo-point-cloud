@@ -9,9 +9,9 @@ int imgWidth, imgHeight;
 ArrayList<Vector> pointCloud;
 void setup() {
   size(900, 900, P3D);
-  //cam = new PeasyCam(this, 100);
-  stereoImg = loadImage("images/stereo3.jpg");
-  stereoImg.resize(stereoImg.width, stereoImg.height);
+  cam = new PeasyCam(this, 100);
+  stereoImg = loadImage("images/stereo6.jpg");  //https://vision.middlebury.edu/stereo/data/scenes2021/
+  stereoImg.resize(stereoImg.width / 7 , stereoImg.height / 7);
   imgWidth = stereoImg.width / 2;
   imgHeight = stereoImg.height;
   print(imgWidth + " / " + imgHeight);
@@ -20,17 +20,17 @@ void setup() {
 
   //leftEdge = edgeImage(left);
   //rightEdge = edgeImage(right);
-  disparity = toImage(disparity(left, right, 30, 5, 5));
+  //disparity = toImage(disparity(left, right, 30, 5, 5));
 
-  image(disparity, 0, 0);
+  ///image(disparity, 0, 0);
   image(right, imgWidth, 0);
 
-  //pointCloud = generate3D(left, right, imgWidth, imgHeight, 1, 300);
+  pointCloud = generate3D(left, right, imgWidth, imgHeight, 2, 5);
 }
 
 void showPointCloud() {
   background(0);
-  strokeWeight(5);
+  strokeWeight(2);
   for (Vector v : pointCloud) {
     stroke(v.col);
     point(v.x, v.y, -v.z);
@@ -38,7 +38,7 @@ void showPointCloud() {
 }
 
 void draw() {
-
+  showPointCloud();
   //left = cutImage(stereoImg, 0, 0, imgWidth, stereoImg.height);
   //right = cutImage(stereoImg, imgWidth, 0, imgWidth, stereoImg.height);
 
@@ -64,7 +64,7 @@ PImage cutImage(PImage original, int x, int y, int w, int h) {
 ArrayList<Vector> generate3D(PImage left, PImage right, int imageWidth, int imageHeight, float focalLength, float camDistance) {
   ArrayList<Vector> points = new ArrayList<Vector>();
 
-  int[][] disparityMap = disparity(left, right, 30, 5, 5);
+  int[][] disparityMap = disparity(left, right, 20, 5, 5);
   for (int i = 0; i < imageHeight; i++) {
     for (int j = 0; j < imageWidth; j++) {
       if (disparityMap[i][j] != -128) {
@@ -81,13 +81,15 @@ ArrayList<Vector> generate3D(PImage left, PImage right, int imageWidth, int imag
 Vector positionFromDisparity(float disparity, float x, float y, int imageWidth, int imageHeight, float focalLength, float camDistance) {
   float xangle = atan((x / (imageHeight / 2) - 1) / focalLength);
   float yangle = atan((y / (imageHeight / 2) - 1) / focalLength);
-  float depth  = disparityToDepth(disparity, focalLength, camDistance) + 500;
-  Vector point = new Vector(tan(xangle) * depth, tan(yangle) * depth, depth - 500);
+  float depth  = disparityToDepth(disparity, focalLength, camDistance);
+  Vector point = new Vector(tan(xangle) * depth, tan(yangle) * depth, depth);
+  point.scale(200);
+  point.z -= 500;
   return point;
 }
 
 float disparityToDepth(float disparity, float focalLength, float camDistance) {
-  return focalLength * camDistance / abs(disparity);
+  return focalLength * camDistance / (1 + abs(disparity));
 }
 
 PImage edgeImage(PImage img) {
@@ -144,7 +146,7 @@ int[] rowDisparity(PImage left, PImage right, int y, int range, int windowX, int
 int disparityPoint(PImage left, PImage right, int xleft, int y, int range, int windowx, int windowy) {
   int minx = xleft;
   float minValue = Float.MAX_VALUE;
-  //if(variance(left, xleft, y, windowx, windowy) < 80000)return -128;
+  if(variance(left, xleft, y, windowx, windowy) < 40000)return -128;
 
   for (int i = max(0, xleft - range); i < min(imgWidth, xleft + range); i++) {
     float ssod = sumOfSquaredDifference(left, right, xleft, y, i, y, windowx, windowy);
@@ -153,7 +155,7 @@ int disparityPoint(PImage left, PImage right, int xleft, int y, int range, int w
       minx = i;
     }
   }
-  if (minValue > 800) return -128;
+  if (minValue > 900) return -128;
   return minx - xleft;
 }
 
