@@ -18,18 +18,17 @@ void setup() {
   left = cutImage(stereoImg, 0, 0, imgWidth, stereoImg.height);
   right = cutImage(stereoImg, imgWidth, 0, imgWidth, stereoImg.height);
 
-  //leftEdge = edgeImage(left);
+  leftEdge = edgeImage(left);
   //rightEdge = edgeImage(right);
-  //disparity = toImage(disparity(left, right, 30, 5, 5));
+  disparity = toImage(disparity(left, right, 60, 4, 4));
 
-  ///image(disparity, 0, 0);
+  //image(disparity, 0, 0);
   image(right, imgWidth, 0);
 
-  pointCloud = generate3D(left, right, imgWidth, imgHeight, 1, 4);
+  //pointCloud = generate3D(left, right, imgWidth, imgHeight, 1, 4);
 }
 
 void showPointCloud() {
-  background(0);
   strokeWeight(2);
   for (Vector v : pointCloud) {
     stroke(v.col);
@@ -38,12 +37,16 @@ void showPointCloud() {
 }
 
 void draw() {
-  showPointCloud();
+  background(0);
+  //showPointCloud();
   //left = cutImage(stereoImg, 0, 0, imgWidth, stereoImg.height);
   //right = cutImage(stereoImg, imgWidth, 0, imgWidth, stereoImg.height);
 
-  //image(left, 0, 0);
-  //image(right, imgWidth, 0);
+  
+  image(left, 0, 0);
+  image(disparity, imgWidth, 0);
+  image(leftEdge, 0, imgHeight);
+  
 }
 
 
@@ -61,16 +64,20 @@ PImage cutImage(PImage original, int x, int y, int w, int h) {
 }
 
 
-
-
-PImage toImage(int[][] map) {
+PImage toImage(float[][] map) {
   PImage img = createImage(map[0].length, map.length, RGB);
   img.loadPixels();
   for (int i = 0; i < img.height; i++) {
     for (int j = 0; j < img.width; j++) {
-      img.pixels[i * img.width + j] = color(map[i][j] + 128, 0, 0);
+      img.pixels[i * img.width + j] = color(map[i][j] * 4 + 128, map[i][j] * 4 + 128, map[i][j] * 4 + 128);
     }
   }
   img.updatePixels();
   return img;
+}
+
+float intensity(PImage img, int x, int y) {
+  color c = img.get(x, y);
+  return 0.299 * red(c) + 0.587 * green(c) + 0.114 * blue(c);
+  
 }

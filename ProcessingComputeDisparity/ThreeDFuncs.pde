@@ -1,7 +1,7 @@
 ArrayList<Vector> generate3D(PImage left, PImage right, int imageWidth, int imageHeight, float focalLength, float camDistance) {
   ArrayList<Vector> points = new ArrayList<Vector>();
 
-  int[][] disparityMap = disparity(left, right, 20, 6, 6);
+  float[][] disparityMap = disparity(left, right, 20, 6, 6);
   for (int i = 0; i < imageHeight; i++) {
     for (int j = 0; j < imageWidth; j++) {
       if (disparityMap[i][j] != -128) {
