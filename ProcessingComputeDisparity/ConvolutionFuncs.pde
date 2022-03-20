@@ -22,6 +22,21 @@ PImage edgeImage(PImage img) {
   return edges;
 }
 
+float[][] edgeStrength(PImage img) {
+  float[][] hor = convolute(horizontalEdge, img);
+  float[][] ver = convolute(verticalEdge, img);
+  
+  float[][] strength = new float[img.height][img.width];
+  for (int j = 0; j < img.height; j++) {
+    for (int i = 0; i < img.width; i++) {
+
+      strength[j][i] = sqrt(hor[j][i]*hor[j][i] + ver[j][i]*ver[j][i]);
+    }
+  }
+  
+  return strength;
+}
+
 float[][] convolute(float[][] convolution, PImage img) {
   float[][] convoluted = new float[img.height][img.width];
   for (int j = 0; j < img.height; j++) {

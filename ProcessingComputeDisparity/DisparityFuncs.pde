@@ -1,59 +1,16 @@
 float[][] disparity(PImage left, PImage right, int range, int windowX, int windowY) {
   float[][] disparityMap = new float[left.height][];
+ //float[][] edgeStrength = edgeStrength(left);
   for (int i = 0; i < left.height; i++) {
     disparityMap[i] = rowDisparity(left, right, i, range, windowX, windowY);
+    //disparityMap[i] = rowDisparityMonotone(left, right, i, range, windowX, windowY);
+    //disparityMap[i] = rowDisparityEdges(left, right, edgeStrength[i], i, range, windowX, windowY);
     if (i % 50 == 0)println("Row: " + i);
   }
 
-  return guassianBlur(disparityMap, 2);
+  return guassianBlur(disparityMap, 3);
 }
 
-float[][] guassianBlur(float[][] map, int blurRadius) {
-  float[][] guassian = new float[map.length][map[0].length];
-  for (int i = 0; i < map.length; i++) {
-    for (int j = 0; j < map[0].length; j++) {
-      guassian[i][j] = relevantAverage(map, j, i, blurRadius, blurRadius);
-    }
-  }
-
-  return guassian;
-}
-
-float relevantAverage(float[][] map, int x, int y, int windowX, int windowY) {
-  windowX /= 2;
-  windowY /= 2;
-  float sum = 0;
-  int n = 0;
-  
-  for (int i = max(0, y - windowY); i < min(y + windowY, map.length); i++) { //
-    for (int j = max(0, x - windowX); j < min(x + windowX, map[0].length); j++) {//
-      
-      if (map[i][j] != -128 && abs(map[i][j] - average(map, j, i, windowX * 2, windowY * 2)) < 40) {
-        sum += map[i][j];
-        n++;
-      }
-    }
-  }
-  return sum / n;
-}
-
-
-float average(float[][] map, int x, int y, int windowX, int windowY) {
-  windowX /= 2;
-  windowY /= 2;
-  float sum = 0;
-  int n = 0;
-  //println("___");
-  for (int i = max(0, y - windowY); i < min(y + windowY, map.length); i++) { //
-    for (int j = max(0, x - windowX); j < min(x + windowX, map[0].length); j++) {//
-      //println("Wx: " + j + " / Wy: " + i);
-      sum += map[i][j];
-      n++;
-    }
-  }
-  
-  return sum / n;
-}
 
 /*
 Computes the disparity of the points where the certainty and variance is high.
@@ -62,13 +19,42 @@ Computes the disparity of the points where the certainty and variance is high.
  
  */
 float[] rowDisparity(PImage left, PImage right, int y, int range, int windowX, int windowY) {
-  float[] rowDisparity = new float[imgWidth];
+  float[] rowDisparity = new float[left.width];
   for (int i = 0; i < rowDisparity.length; i++) {
     rowDisparity[i] = disparityPoint(left, right, i, i - range, i + range, y, windowX, windowY, 30000, 600);
   }
   return rowDisparity;
 }
 
+float[] rowDisparityMonotone(PImage left, PImage right, int y, int range, int windowX, int windowY) {
+  float[] rowDisparity = new float[left.width];
+  float maxSsod = 900; //left.width * left.height * 100;
+   rowDisparity[0] = disparityPoint(left, right, 0, 0, range, y, windowX, windowY, 30000, maxSsod);
+   for (int i = 1; i < rowDisparity.length; i++) {
+     if(rowDisparity[i - 1] != -128)
+        rowDisparity[i] = disparityPoint(left, right, i, i + (int)rowDisparity[i - 1], i + range, y, windowX, windowY, 30000, maxSsod);
+      else
+        rowDisparity[i] = disparityPoint(left, right, i, i - range, i + range, y, windowX, windowY, 30000, maxSsod);
+      
+  }
+ 
+  return rowDisparity;
+}
+
+
+float[] rowDisparityEdges(PImage left, PImage right, float[] edgeStrength, int y, int range, int windowX, int windowY) {
+  float[] rowDisparity = new float[left.width];
+  float maxSsod = 600; //left.width * left.height * 100;
+   rowDisparity[0] = disparityPoint(left, right, 0, 0, range, y, windowX, windowY, 30000, maxSsod);
+   for (int i = 1; i < rowDisparity.length; i++) {
+     if(edgeStrength[i] > 50)
+       rowDisparity[i] = disparityPoint(left, right, i, i - range, i + range, y, windowX, windowY, 30000, maxSsod);
+     else
+       rowDisparity[i] = -128;
+  }
+ 
+  return rowDisparity;
+}
 
 /*
 Computes the disparity at a specific point. Searches on the other image form xmin to xmax
@@ -79,7 +65,7 @@ int disparityPoint(PImage left, PImage right, int xleft, int xmin, int xmax, int
   //if(variance(left, xleft, y, windowx, windowy) < minVariance)return -128;
 
   for (int i = max(0, xmin); i < min(imgWidth, xmax); i++) {
-    if (abs(intensity(left, xleft, y) - intensity(right, i, y)) > 15)continue;
+    //if (abs(intensity(left, xleft, y) - intensity(right, i, y)) > 10)continue;
     float ssod = sumOfSquaredDifference(left, right, xleft, y, i, y, windowx, windowy);
     if (ssod < minValue) {
       minValue = ssod;
@@ -87,7 +73,7 @@ int disparityPoint(PImage left, PImage right, int xleft, int xmin, int xmax, int
     }
   }
   if (minValue == Float.MAX_VALUE)return -128;
-  if (minValue > maxSsod) return -128;
+  //if (minValue > maxSsod) return -128;
   return minx - xleft;
 }
 

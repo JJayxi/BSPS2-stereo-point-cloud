@@ -10,8 +10,8 @@ ArrayList<Vector> pointCloud;
 void setup() {
   size(900, 900, P3D);
   cam = new PeasyCam(this, 100);
-  stereoImg = loadImage("images/stereo6.jpg");  //https://vision.middlebury.edu/stereo/data/scenes2021/
-  stereoImg.resize(stereoImg.width / 7 , stereoImg.height / 7);
+  stereoImg = loadImage("images/stereo7.jpg");  //https://vision.middlebury.edu/stereo/data/scenes2021/
+  stereoImg.resize(stereoImg.width / 5 , stereoImg.height / 5);
   imgWidth = stereoImg.width / 2;
   imgHeight = stereoImg.height;
   print(imgWidth + " / " + imgHeight);
@@ -19,8 +19,8 @@ void setup() {
   right = cutImage(stereoImg, imgWidth, 0, imgWidth, stereoImg.height);
 
   leftEdge = edgeImage(left);
-  //rightEdge = edgeImage(right);
-  disparity = toImage(disparity(left, right, 60, 4, 4));
+  rightEdge = edgeImage(right);
+  disparity = toImage(disparity(leftEdge, rightEdge, 20, 4, 4));
 
   //image(disparity, 0, 0);
   image(right, imgWidth, 0);
@@ -46,6 +46,7 @@ void draw() {
   image(left, 0, 0);
   image(disparity, imgWidth, 0);
   image(leftEdge, 0, imgHeight);
+  image(rightEdge, imgWidth, imgHeight);
   
 }
 
@@ -69,7 +70,11 @@ PImage toImage(float[][] map) {
   img.loadPixels();
   for (int i = 0; i < img.height; i++) {
     for (int j = 0; j < img.width; j++) {
-      img.pixels[i * img.width + j] = color(map[i][j] * 4 + 128, map[i][j] * 4 + 128, map[i][j] * 4 + 128);
+      if(map[i][j] == -128) 
+        img.pixels[i * img.width + j] = color(255, 0, 0);
+      else {
+        img.pixels[i * img.width + j] = color(map[i][j] * 10 + 128, map[i][j] * 10 + 128, map[i][j] * 10 + 128);
+      }
     }
   }
   img.updatePixels();
