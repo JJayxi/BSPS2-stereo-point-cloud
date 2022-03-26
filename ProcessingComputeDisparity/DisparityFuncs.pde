@@ -8,7 +8,7 @@ float[][] disparity(PImage left, PImage right, int range, int windowX, int windo
     if (i % 50 == 0)println("Row: " + i);
   }
 
-  return guassianBlur(disparityMap, 3);
+  return disparityMap; //guassianBlur(disparityMap, 3);
 }
 
 
@@ -64,8 +64,9 @@ int disparityPoint(PImage left, PImage right, int xleft, int xmin, int xmax, int
   float minValue = Float.MAX_VALUE;
   //if(variance(left, xleft, y, windowx, windowy) < minVariance)return -128;
 
-  for (int i = max(0, xmin); i < min(imgWidth, xmax); i++) {
+  for (int i = max(0, xmin) - 1; i <= min(imgWidth, xmax); i++) {
     //if (abs(intensity(left, xleft, y) - intensity(right, i, y)) > 10)continue;
+    
     float ssod = sumOfSquaredDifference(left, right, xleft, y, i, y, windowx, windowy);
     if (ssod < minValue) {
       minValue = ssod;
