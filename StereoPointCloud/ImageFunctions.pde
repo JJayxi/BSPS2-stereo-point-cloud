@@ -21,17 +21,20 @@ PImage copy(PImage image) {
 }
 
 PImage disparityMapToImage(float[][] map, float imageScale) {
+  float colorScale = imageScale * 2;
   PImage image = createImage(map[0].length, map.length, RGB);
+
   image.loadPixels();
   for (int i = 0; i < image.height; i++) {
     for (int j = 0; j < image.width; j++) {
-      if(map[i][j] == Float.NaN) 
+      if (Float.isNaN(map[i][j])) 
         image.pixels[i * image.width + j] = color(255, 0, 0);
       else {
-        image.pixels[i * image.width + j] = color(map[i][j] * imageScale + 128, map[i][j] * imageScale + 128, map[i][j] * imageScale + 128);
+        float val = map[i][j] * colorScale + 255;
+        image.pixels[i * image.width + j] = color(val, val, val);
       }
     }
   }
   image.updatePixels();
-  return image; 
+  return image;
 }

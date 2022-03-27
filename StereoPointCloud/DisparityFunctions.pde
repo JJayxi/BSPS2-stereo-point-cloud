@@ -1,27 +1,30 @@
-float[][] iterativeDisparityMap(PImage left, PImage right, int scale) {
+float[][] iterativeDisparityMap(PImage left, PImage right, int scale) {  
   PImage leftRescaled = copy(left);
-  leftRescaled.resize(left.width / scale, left.height / scale);
+  leftRescaled.resize(ceil(left.width / scale) + 1, ceil(left.height / scale) + 1);
   
   PImage rightRescaled = copy(right);
-  rightRescaled.resize(right.width / scale, right.height / scale);
+  rightRescaled.resize(ceil(right.width / scale) + 1, ceil(right.height / scale) + 1);
   
-  float[][] baseMap = generateDisparityMap(leftRescaled, rightRescaled, 7);
+  println("Generating Base Map..");
+  float[][] baseMap = gaussianBlur(generateDisparityMap(leftRescaled, rightRescaled, 6), scale); 
   
+  println("Generating Disparity Map..");
   float[][] disparityMap = generateDisparityMap(left, right, baseMap, scale, 4);
-    
+  
+  disparityMap = gaussianBlur(disparityMap, 4);
+  
+  println("Correcting Disparity Map..");
+  disparityMap = disparityCorrection(left, disparityMap, 20);
+  
   return disparityMap;
 }
 float[][] generateDisparityMap(PImage left, PImage right, float[][] baseMap, int baseMapScale, int window) {
-  
+  float maxDisparity = 0.13 * (left.width + left.height) / 2; //13% of image size
   float[][] disparityMap = new float[left.height][];
-  
-  println("Base Map Length: " + baseMap.length);
-  println("Base Map Scale: " + baseMapScale);
-  println("Current Image Length: " + left.height);
   
   for(int i = 0; i < left.height; i++) {
     if (i % 50 == 0)println("Row: " + i);
-    disparityMap[i] = rowDisparity(left, right, i, baseMap[i / baseMapScale], baseMapScale, window); 
+    disparityMap[i] = rowDisparity(left, right, i, baseMap[i / baseMapScale], baseMapScale, maxDisparity, window); 
   }
   
   return disparityMap;
@@ -29,7 +32,7 @@ float[][] generateDisparityMap(PImage left, PImage right, float[][] baseMap, int
 
 
 float[][] generateDisparityMap(PImage left, PImage right, int window) {
-  float maxDisparity = 0.13 * (left.width + left.height) / 2; //15% of image size
+  float maxDisparity = 0.13 * (left.width + left.height) / 2; //13% of image size
   
   float[][] disparityMap = new float[left.height][];
   
@@ -42,21 +45,27 @@ float[][] generateDisparityMap(PImage left, PImage right, int window) {
 }
 
 
-float[] rowDisparity(PImage left, PImage right, int y, float[] baseDisparity, int baseMapScale, int window) {
+float[] rowDisparity(PImage left, PImage right, int y, float[] baseDisparity, int baseMapScale, float maxDisparity, int window) {
   float[] disparityRow = new float[left.width];
   for(int i = 0; i < disparityRow.length; i++) {
-    float bestBasePoint = i + baseDisparity[i / baseMapScale] * baseMapScale;
-    disparityRow[i] = pointDisparity(left, right, i, y, bestBasePoint - baseMapScale, bestBasePoint + baseMapScale, window);
+    if(Float.isNaN(baseDisparity[i / baseMapScale])) {
+      disparityRow[i] = pointDisparity(left, right, i, y, i - maxDisparity, i, window);
+    } else {
+      float bestBaseDisparity = i + baseDisparity[i / baseMapScale] * baseMapScale;
+      disparityRow[i] = pointDisparity(left, right, i, y, bestBaseDisparity - baseMapScale * 2, bestBaseDisparity + baseMapScale * 2, window);
+    }
   }
   
   return disparityRow;
 }
 
+
+
 float[] rowDisparity(PImage left, PImage right, int y, float maxDisparity, int window) {
   float[] disparityRow = new float[left.width];
   
   for(int i = 0; i < disparityRow.length; i++)
-     disparityRow[i] = pointDisparity(left, right, i, y,  i - maxDisparity, i + maxDisparity, window);
+     disparityRow[i] = pointDisparity(left, right, i, y,  i - maxDisparity, i, window);
   
   return disparityRow;
 }
@@ -71,7 +80,8 @@ float pointDisparity(PImage left, PImage right, int x, int y, float minbestx, fl
        minCost = cost;
        bestx = i;
      }
-  }  
+  }
+  
   return bestx - x;
 }
 

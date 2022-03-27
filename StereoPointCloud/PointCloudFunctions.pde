@@ -8,7 +8,7 @@ ArrayList<Point> generatePointCloud(String stereoImageFileName, float lensDistan
   PImage left = cropImage(image, 0, 0, image.width / 2, image.height);
   PImage right= cropImage(image, image.width / 2, 0, image.width / 2, image.height);
   
-  float[][] disparityMap = iterativeDisparityMap(left, right, 5);
+  float[][] disparityMap = findErrors(left, right, iterativeDisparityMap(left, right, 3), 70);
   ArrayList<Point> pointCloud = pointCloudFromDisparityMap(left, disparityMap, lensDistance, focalLength);
 
   return pointCloud;
@@ -31,14 +31,14 @@ Point pointFromDisparity(color col, float disparity, float x, float y, float ima
   //find tangent of angle of that point on the image according to center of camera
   float xTan = x / focalLength;
   float yTan = y / focalLength;
-  
-  float depth = disparityToDepth(disparity, lensDistance, focalLength);
+    
+  float depth = disparityToDepth(disparity / imageWidth, lensDistance, focalLength);
   
   return new Point(xTan * depth, yTan * depth, depth, col);
 }
 
 float disparityToDepth(float disparity, float lensDistance, float focalLength) {
-  return focalLength * lensDistance / abs(disparity);
+  return - focalLength * lensDistance / disparity;
 }
 
 void renderPointCloud(ArrayList<Point> pointCloud) {
