@@ -8,7 +8,7 @@ ArrayList<Point> generatePointCloud(String stereoImageFileName, float lensDistan
   PImage left = cropImage(image, 0, 0, image.width / 2, image.height);
   PImage right= cropImage(image, image.width / 2, 0, image.width / 2, image.height);
   
-  float[][] disparityMap = findErrors(left, right, iterativeDisparityMap(left, right, 3), 70);
+  float[][] disparityMap = iterativeDisparityMap(left, right, 3); //findErrors(left, right, iterativeDisparityMap(left, right, 3), 70);
   ArrayList<Point> pointCloud = pointCloudFromDisparityMap(left, disparityMap, lensDistance, focalLength);
 
   return pointCloud;
@@ -18,7 +18,7 @@ ArrayList<Point> pointCloudFromDisparityMap(PImage image, float[][] disparityMap
   ArrayList<Point> pointCloud = new ArrayList<Point>();
   for (int i = 0; i < disparityMap.length; i++)
     for (int j = 0; j < disparityMap[0].length; j++) 
-      if (!Float.isNaN(disparityMap[i][j]))
+      if (!Float.isNaN(disparityMap[i][j]) && abs(disparityMap[i][j]) > 4)
         pointCloud.add(pointFromDisparity(image.get(j, i), disparityMap[i][j], j, i, image.width, image.height, lensDistance, focalLength));
 
   return pointCloud;
@@ -34,7 +34,7 @@ Point pointFromDisparity(color col, float disparity, float x, float y, float ima
     
   float depth = disparityToDepth(disparity / imageWidth, lensDistance, focalLength);
   
-  return new Point(xTan * depth, yTan * depth, depth, col);
+  return new Point(-xTan * depth, -yTan * depth, -depth, col);
 }
 
 float disparityToDepth(float disparity, float lensDistance, float focalLength) {
@@ -57,6 +57,25 @@ ArrayList<Point> rescale(ArrayList<Point> pointCloud, float scale) {
    }
    
    return pointCloud;
+}
+
+void export(String path, ArrayList<Point> pointCloud) {
+  String s = "";
+  s+= "ply\n";
+  s+= "format ascii 1.0\n";
+  s+= "element vertex " + pointCloud.size() +"\n";
+  s+="property float32 x\nproperty float32 y\nproperty float32 z\nproperty uchar red\nproperty uchar green\nproperty uchar blue\nend_header\n";
+  String[] sa = new String[pointCloud.size() + 1];
+  sa[0] = s;
+  int i = 1; 
+  for(Point p : pointCloud) {
+    sa[i] = p.x + " " + p.y + " " + p.z + " " + (int)red(p.col) + " " + (int)green(p.col) + " " + (int)blue(p.col);
+    i++;
+    if(i % 1000 == 0)println("made " + i + " points");
+  }
+  
+  saveStrings(path, sa);
+  println("Exported file");
 }
 
 

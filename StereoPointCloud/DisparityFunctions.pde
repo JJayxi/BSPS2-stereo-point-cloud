@@ -6,15 +6,19 @@ float[][] iterativeDisparityMap(PImage left, PImage right, int scale) {
   rightRescaled.resize(ceil(right.width / scale) + 1, ceil(right.height / scale) + 1);
   
   println("Generating Base Map..");
-  float[][] baseMap = gaussianBlur(generateDisparityMap(leftRescaled, rightRescaled, 6), scale); 
+  float[][] baseMap = generateDisparityMap(leftRescaled, rightRescaled, 6);
+  baseMap = denoiseMap(leftRescaled, baseMap, 5);
+  baseMap = gaussianBlur(baseMap, scale); 
   
   println("Generating Disparity Map..");
   float[][] disparityMap = generateDisparityMap(left, right, baseMap, scale, 4);
   
-  disparityMap = gaussianBlur(disparityMap, 4);
+  //disparityMap = denoiseMap(left, disparityMap, 150);
   
-  println("Correcting Disparity Map..");
-  disparityMap = disparityCorrection(left, disparityMap, 20);
+  //disparityMap = gaussianBlur(disparityMap, 4);
+  
+  //println("Correcting Disparity Map..");
+  //disparityMap = disparityCorrection(left, disparityMap, 20);
   
   return disparityMap;
 }
