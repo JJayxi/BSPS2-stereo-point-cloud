@@ -7,13 +7,13 @@ float[][] iterativeDisparityMap(PImage left, PImage right, int scale) {
   
   println("Generating Base Map..");
   float[][] baseMap = generateDisparityMap(leftRescaled, rightRescaled, 6);
-  baseMap = denoiseMap(leftRescaled, baseMap, 5);
+  baseMap = denoiseMap(leftRescaled, baseMap, false, 6);
   baseMap = gaussianBlur(baseMap, scale); 
   
   println("Generating Disparity Map..");
   float[][] disparityMap = generateDisparityMap(left, right, baseMap, scale, 4);
   
-  //disparityMap = denoiseMap(left, disparityMap, 150);
+  //disparityMap = denoiseMap(left, disparityMap, false, 50);
   
   //disparityMap = gaussianBlur(disparityMap, 4);
   
@@ -36,7 +36,7 @@ float[][] generateDisparityMap(PImage left, PImage right, float[][] baseMap, int
 
 
 float[][] generateDisparityMap(PImage left, PImage right, int window) {
-  float maxDisparity = 0.13 * (left.width + left.height) / 2; //13% of image size
+  float maxDisparity = 0.05 * (left.width + left.height) / 2; //13% of image size
   
   float[][] disparityMap = new float[left.height][];
   
@@ -56,7 +56,7 @@ float[] rowDisparity(PImage left, PImage right, int y, float[] baseDisparity, in
       disparityRow[i] = pointDisparity(left, right, i, y, i - maxDisparity, i, window);
     } else {
       float bestBaseDisparity = i + baseDisparity[i / baseMapScale] * baseMapScale;
-      disparityRow[i] = pointDisparity(left, right, i, y, bestBaseDisparity - baseMapScale * 2, bestBaseDisparity + baseMapScale * 2, window);
+      disparityRow[i] = pointDisparity(left, right, i, y, bestBaseDisparity - baseMapScale, bestBaseDisparity + baseMapScale, window);
     }
   }
   
