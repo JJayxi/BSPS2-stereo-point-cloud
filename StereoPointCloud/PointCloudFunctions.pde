@@ -14,7 +14,9 @@ ArrayList<Point> generatePointCloud(String stereoImageFileName, float lensDistan
   
   float[][] disparityMap = iterativeDisparityMap(left, right, 3); //findErrors(left, right, iterativeDisparityMap(left, right, 3), 70);
   ArrayList<Point> pointCloud = pointCloudFromDisparityMap(left, disparityMap, lensDistance, focalLength);
-
+  
+  pointCloud = rescale(pointCloud, 20);
+  
   return pointCloud;
 }
 
@@ -22,7 +24,7 @@ ArrayList<Point> pointCloudFromDisparityMap(PImage image, float[][] disparityMap
   ArrayList<Point> pointCloud = new ArrayList<Point>();
   for (int i = 0; i < disparityMap.length; i++)
     for (int j = 0; j < disparityMap[0].length; j++) 
-      if (!Float.isNaN(disparityMap[i][j]) && (disparityMap[i][j] < -10 && disparityMap[i][j] > -80))
+      if (!Float.isNaN(disparityMap[i][j]) && (disparityMap[i][j] < -4 && disparityMap[i][j] > -image.width * 0.1))
         pointCloud.add(pointFromDisparity(image.get(j, i), disparityMap[i][j], j, i, image.width, image.height, lensDistance, focalLength));
 
   return pointCloud;
@@ -34,7 +36,7 @@ Point pointFromDisparity(color col, float disparity, float x, float y, float ima
   y = 2 * y / imageHeight- 1;
   //find tangent of angle of that point on the image according to center of camera
   float xTan = x / focalLength;
-  float yTan = y / focalLength;
+  float yTan = y / focalLength * (imageHeight / imageWidth);
     
   float depth = disparityToDepth(disparity / imageWidth, lensDistance, focalLength);
   

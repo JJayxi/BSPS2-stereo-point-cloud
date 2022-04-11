@@ -11,7 +11,7 @@ void draw() {
 }
 
 void generateExportPCC() {
-  pipeline("images/stereo5.jpg", 0.3, 3, "cloud2.ply");
+  pipeline("images/stereo3.jpg", 1, 3, "cloud.ply");
 }
 
 void displayDisparity() {
