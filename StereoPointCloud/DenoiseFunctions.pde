@@ -78,8 +78,6 @@ boolean pixelPossible(PImage image, float[][] disparityMap, int radius, int thre
     a += da;
   }
 
-
-
   return false;
 }
 

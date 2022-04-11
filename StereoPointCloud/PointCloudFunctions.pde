@@ -77,9 +77,9 @@ void export(String path, ArrayList<Point> pointCloud) {
   for(Point p : pointCloud) {
     sa[i] = p.x + " " + p.y + " " + p.z + " " + (int)red(p.col) + " " + (int)green(p.col) + " " + (int)blue(p.col);
     i++;
-    if(i % 10000 == 0)println("made " + i + " points");
+    if(i % 100000 == 0)println(i + " points");
   }
-  
+  println("Exported " + pointCloud.size() + " points");
   saveStrings(path, sa);
   println("Exported file");
 }

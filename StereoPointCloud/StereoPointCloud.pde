@@ -1,8 +1,8 @@
 
 void setup() {
   size(1400, 800);
-  generateExportPCC();
-  //displayDisparity();
+  //generateExportPCC();
+  displayDisparity();
 }
 
 void draw() {
@@ -16,7 +16,7 @@ void generateExportPCC() {
 
 void displayDisparity() {
   int scale = 2;
-  PImage image = loadImage("images/stereo5.jpg");
+  PImage image = loadImage("images/stereo4.jpg");
 
   image.resize(image.width / scale, image.height / scale);
 
