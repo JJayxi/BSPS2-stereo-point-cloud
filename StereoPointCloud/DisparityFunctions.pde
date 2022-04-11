@@ -28,44 +28,32 @@ float[][] generateDisparityMap(PImage left, PImage right, float[][] baseMap, int
   for (int i = 0; i < left.height; i++) {
     if (i % 100 == 0)println("Row: " + i);
     for (int j = 0; j < disparityMap[i].length; j++) {
-      float baseDisparity = j + baseMap[i / baseMapScale][j / baseMapScale] * baseMapScale;
-      disparityMap[i][j] = pointDisparity(left, right, j, i, baseDisparity - baseMapScale * 2, baseDisparity + baseMapScale * 2, window);
+      int baseDisparity = (int)(j + baseMap[i / baseMapScale][j / baseMapScale] * baseMapScale);
+      disparityMap[i][j] = pixelDisparity(left, right, j, i, baseDisparity - baseMapScale * 2, baseDisparity + baseMapScale * 2, window);
     }
   }
 
   return disparityMap;
 }
 
-float[] rowDisparity(PImage left, PImage right, int y, float[] baseDisparity, int baseMapScale, int window) {
-  float[] disparityRow = new float[left.width];
-  for (int i = 0; i < disparityRow.length; i++) {
-    float bestBaseDisparity = i + baseDisparity[i / baseMapScale] * baseMapScale;
-    disparityRow[i] = pointDisparity(left, right, i, y, bestBaseDisparity - baseMapScale * 2, bestBaseDisparity + baseMapScale * 2, window);
-  }
-
-  return disparityRow;
-}
-
 
 float[][] generateDisparityMap(PImage left, PImage right, int window) {
-  float maxDisparity = 0.2 * (left.width + left.height) / 2;
+  int maxDisparity = (left.width + left.height) / 2 / 5;
 
   float[][] disparityMap = new float[left.height][left.width];
 
   for (int i = 0; i < left.height; i++) {
     if (i % 100 == 0)println("Row: " + i);
     for (int j = 0; j < disparityMap[i].length; j++)
-      disparityMap[i][j] = pointDisparity(left, right, j, i, j - maxDisparity, j, window);
+      disparityMap[i][j] = pixelDisparity(left, right, j, i, j - maxDisparity, j, window);
   }
 
   return disparityMap;
 }
 
-float pointDisparity(PImage left, PImage right, int x, int y, float minbestx, float maxbestx, int window) {
-  float bestx = x;
-  float minCost = Float.MAX_VALUE;
-  //println("Min: " + minbestx + " / Max: " + maxbestx);
-  for (int i = floor(max(0, minbestx)); i <= ceil(min(left.width, maxbestx)); i++) {
+int pixelDisparity(PImage left, PImage right, int x, int y, int rangeMin, int rangeMax, int window) {
+  int bestx = x, minCost = Integer.MAX_VALUE;
+  for (int i = max(0, rangeMin); i < min(left.width, rangeMax); i++) {
     int cost = cost(left, right, x, i, y, window);
     if (cost < minCost) {
       minCost = cost;

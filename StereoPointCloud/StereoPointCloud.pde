@@ -1,27 +1,43 @@
 
 void setup() {
   size(1400, 800);
-  //generateExportPCC();
-  displayDisparity();
+  generateExportPCC();
+  //displayDisparity();
+  //imagesForReport();
 }
 
-void draw() {
-  //background(0);
-  //renderPointCloud(pointCloud);
-}
-
-void generateExportPCC() {
-  pipeline("images/stereo3.jpg", 1, 3, "cloud.ply");
-}
-
-void displayDisparity() {
+void imagesForReport() {
   int scale = 2;
-  PImage image = loadImage("images/stereo4.jpg");
+  PImage image = loadImage("images/stereo4.png");
 
   image.resize(image.width / scale, image.height / scale);
 
   PImage left = cropImage(image, 0, 0, image.width / 2, image.height);
   PImage right= cropImage(image, image.width / 2, 0, image.width / 2, image.height);
+  
+  ///TO MAKE IMAGES FOR REPORT
+  left.save("output/left.png");
+  right.save("output/right.png");
+  float[][] disparityMap = iterativeDisparityMap(left, right, 2);
+  PImage disparityImage = disparityMapToImage(disparityMap, scale);
+  disparityImage.save("output/disparity.png");
+}
+
+void generateExportPCC() {
+  pipeline("images/stereo9.png", 1, 2, "cloud.ply");
+}
+
+void displayDisparity() {
+  int scale = 2;
+  PImage image = loadImage("images/stereo5.png");
+
+  image.resize(image.width / scale, image.height / scale);
+
+  PImage left = cropImage(image, 0, 0, image.width / 2, image.height);
+  PImage right= cropImage(image, image.width / 2, 0, image.width / 2, image.height);
+  
+  
+  
 
   float[][] disparityMap = iterativeDisparityMap(left, right, 2);
 
@@ -39,11 +55,12 @@ void displayDisparity() {
 
 void pipeline(String stereoImagePath, float camDistance, float focalLength, String pointCloudExportPath) {
   PImage image = loadImage(stereoImagePath);
+  //image.resize(image.width / 2, image.height / 2);
   
   PImage left = cropImage(image, 0, 0, image.width / 2, image.height);
   PImage right= cropImage(image, image.width / 2, 0, image.width / 2, image.height);
   
-  float[][] disparityMap = iterativeDisparityMap(left, right, 2);
+  float[][] disparityMap = iterativeDisparityMap(left, right, 3);
   float[][] denoisedMap = denoiseMap(left, disparityMap);
   float[][] smoothedMap = smoothMap(left, denoisedMap);
   

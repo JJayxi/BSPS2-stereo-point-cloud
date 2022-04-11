@@ -12,14 +12,14 @@ float[][] findErrors(PImage left, PImage right, float[][] disparityMap, float th
 }
 
 int colorDistance(color color1, color color2) {
-  int sum = 0;
-  int diff = 0;
+  int sum = 0, diff = 0;
+  //red
   diff = (color1 >> 16 & 0xFF) - (color2 >> 16 & 0xFF);
   sum += diff * diff;
-
+  //green
   diff = (color1 >> 8 & 0xFF) - (color2 >> 8 & 0xFF);
   sum += diff * diff;
-
+  //blue
   diff = (color1 & 0xFF) - (color2 & 0xFF);
   sum += diff * diff;
   return sum;
