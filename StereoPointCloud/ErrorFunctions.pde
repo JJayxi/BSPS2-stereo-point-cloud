@@ -4,15 +4,25 @@ float[][] findErrors(PImage left, PImage right, float[][] disparityMap, float th
       color leftcol = left.get(j, i);
       color rightcol= right.get(j + (int)disparityMap[i][j], i);
 
-      if (colorDistanceSquared(leftcol, rightcol) > threshold)
+      if (colorDistance(leftcol, rightcol) > threshold)
         disparityMap[i][j] = Float.NaN;
     }
 
   return disparityMap;
 }
 
-float colorDistanceSquared(color color1, color color2) {
-  return pow(red(color1) - red(color2), 2) + pow(red(color1) - red(color2), 2) + pow(red(color1) - red(color2), 2);
+int colorDistance(color color1, color color2) {
+  int sum = 0;
+  int diff = 0;
+  diff = (color1 >> 16 & 0xFF) - (color2 >> 16 & 0xFF);
+  sum += diff * diff;
+
+  diff = (color1 >> 8 & 0xFF) - (color2 >> 8 & 0xFF);
+  sum += diff * diff;
+
+  diff = (color1 & 0xFF) - (color2 & 0xFF);
+  sum += diff * diff;
+  return sum;
 }
 
 float[][] disparityCorrection(PImage image, float[][] disparityMap, float threshold) {

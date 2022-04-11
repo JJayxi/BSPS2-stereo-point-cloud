@@ -2,7 +2,7 @@ float[][] gaussianBlur(float[][] map, int blurRadius) {
   float[][] gaussian = new float[map.length][map[0].length];
   for (int i = 0; i < map.length; i++) {
     for (int j = 0; j < map[0].length; j++) {
-      gaussian[i][j] = relevantAverage (map, j, i, blurRadius, 12 - 2 * blurRadius);
+      gaussian[i][j] = average(map, j, i, blurRadius); //, 12 - 2 * blurRadius);
     }
   }
 

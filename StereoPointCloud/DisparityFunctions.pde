@@ -6,12 +6,17 @@ float[][] iterativeDisparityMap(PImage left, PImage right, int scale) {
   rightRescaled.resize(right.width / scale + 1, right.height / scale + 1);
   
   println("Generating Base Map..");
-  float[][] baseMap = generateDisparityMap(leftRescaled, rightRescaled, 6);
-  baseMap = denoiseMap(leftRescaled, baseMap, false, 6);
-  baseMap = gaussianBlur(baseMap, scale); 
+  float[][] baseMap = generateDisparityMap(leftRescaled, rightRescaled, 5);
+  baseMap = denoiseMap(leftRescaled, baseMap);
+  //baseMap = denoiseMap(leftRescaled, baseMap, false, 10);
+  //baseMap = denoiseMap(leftRescaled, baseMap, true, 3);
+  baseMap = gaussianBlur(baseMap, scale);
+  
+  
+  disparityMapToImage(baseMap, scale * 2).save("baseMap.png");
   
   println("Generating Disparity Map..");
-  float[][] disparityMap = generateDisparityMap(left, right, baseMap, scale, 4);
+  float[][] disparityMap = generateDisparityMap(left, right, baseMap, scale, 3);
   
   //disparityMap = denoiseMap(left, disparityMap, false, 50);
   
@@ -23,11 +28,11 @@ float[][] iterativeDisparityMap(PImage left, PImage right, int scale) {
   return disparityMap;
 }
 float[][] generateDisparityMap(PImage left, PImage right, float[][] baseMap, int baseMapScale, int window) {
-  float maxDisparity = 0.13 * (left.width + left.height) / 2; //13% of image size
+  float maxDisparity = 0.2 * left.width; 
   float[][] disparityMap = new float[left.height][];
   
   for(int i = 0; i < left.height; i++) {
-    if (i % 50 == 0)println("Row: " + i);
+    if (i % 100 == 0)println("Row: " + i);
     disparityMap[i] = rowDisparity(left, right, i, baseMap[i / baseMapScale], baseMapScale, maxDisparity, window); 
   }
   
@@ -36,12 +41,12 @@ float[][] generateDisparityMap(PImage left, PImage right, float[][] baseMap, int
 
 
 float[][] generateDisparityMap(PImage left, PImage right, int window) {
-  float maxDisparity = 0.05 * (left.width + left.height) / 2; //13% of image size
+  float maxDisparity = 0.2 * (left.width + left.height) / 2; //13% of image size
   
   float[][] disparityMap = new float[left.height][];
   
   for(int i = 0; i < left.height; i++) {
-    if (i % 50 == 0)println("Row: " + i);
+    if (i % 100 == 0)println("Row: " + i);
     disparityMap[i] = rowDisparity(left, right, i, maxDisparity, window); 
   }
   
@@ -56,7 +61,7 @@ float[] rowDisparity(PImage left, PImage right, int y, float[] baseDisparity, in
       disparityRow[i] = pointDisparity(left, right, i, y, i - maxDisparity, i, window);
     } else {
       float bestBaseDisparity = i + baseDisparity[i / baseMapScale] * baseMapScale;
-      disparityRow[i] = pointDisparity(left, right, i, y, bestBaseDisparity - baseMapScale, bestBaseDisparity + baseMapScale, window);
+      disparityRow[i] = pointDisparity(left, right, i, y, bestBaseDisparity - baseMapScale * 2, bestBaseDisparity + baseMapScale * 2, window);
     }
   }
   
@@ -79,7 +84,7 @@ float pointDisparity(PImage left, PImage right, int x, int y, float minbestx, fl
   float minCost = Float.MAX_VALUE;
   //println("Min: " + minbestx + " / Max: " + maxbestx);
   for(int i = floor(max(0, minbestx)); i <= ceil(min(left.width, maxbestx)); i++) {
-     float cost = sumOfSquaredDifference(left, right, x, i, y, window);
+     int cost = cost(left, right, x, i, y, window);
      if (cost < minCost) {
        minCost = cost;
        bestx = i;
@@ -90,21 +95,13 @@ float pointDisparity(PImage left, PImage right, int x, int y, float minbestx, fl
 }
 
 
-float sumOfSquaredDifference(PImage left, PImage right, int xleft, int xright, int y, int window) {
+int cost(PImage left, PImage right, int xleft, int xright, int y, int window) {
   int sum = 0;
 
   for (int i = -window / 2; i <= window / 2; i++)
     for (int j = - window / 2; j <= window / 2; j++) {
-      int diff;
-      diff = (left.get(xleft + j, y + i) >> 16 & 0xFF) - (right.get(xright + j, y + i) >> 16 & 0xFF);
-      sum += diff * diff;
-
-      diff = (left.get(xleft + j, y + i) >> 8 & 0xFF) - (right.get(xright + j, y + i) >> 8 & 0xFF);
-      sum += diff * diff;
-
-      diff = (left.get(xleft + j, y + i) & 0xFF) - (right.get(xright + j, y + i) & 0xFF);
-      sum += diff * diff;
+      sum += colorDistance(left.get(xleft + j, y + i), right.get(xright + j, y + i));
     }
 
-  return sum / (window * window * 3);
+  return sum;
 }

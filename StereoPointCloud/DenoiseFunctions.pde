@@ -1,19 +1,20 @@
 float[][] denoiseMap(PImage image, float[][] disparityMap) {
-  float[][] denoisedMap = denoiseMap(image, disparityMap, false, 30);
-  denoisedMap = denoiseMap(image, denoisedMap, true, 25);
-  denoisedMap = denoiseMap(image, denoisedMap, false, 30);
+  println("Denoising high frequency..");
+  float[][] denoisedMap = denoiseMap(image, disparityMap, false, 10);
+  println("Denoising low frequency..");
+  denoisedMap = denoiseMap(image, denoisedMap, true, 5);
+  denoisedMap = denoiseMap(image, denoisedMap, false, 10);
  
   return denoisedMap;
 }
 
 float[][] denoiseMap(PImage image, float[][] disparityMap, boolean low, int n) {
-  println("Denoising..");
+  
   boolean[][] validityMap;
   float[][] denoisedMap = new float[image.height][image.width];
   for (int i = 0; i < n; i++) {
     validityMap = validMap(image, disparityMap, low);
     disparityMap = denoiseStep(image, denoisedMap, disparityMap, validityMap);
-    if (i % 10 == 0)println("Pass " + (i));
   }
   return disparityMap;
 }
@@ -35,7 +36,7 @@ float denoisePixel(PImage image, float[][] disparityMap, boolean[][] validityMap
   float minColorDist = Float.MAX_VALUE;
   for (int i = max(0, y - 1); i < min(image.height, y + 2); i++) {
     for (int j = max(0, x - 1); j < min(image.width, x + 2); j++) {
-      float colDist = colorDistanceSquared(image.get(j, i), image.get(x, y));
+      float colDist = colorDistance(image.get(j, i), image.get(x, y));
       if (validityMap[i][j] && colDist < minColorDist) {
         bestDisparity = disparityMap[i][j];
         minColorDist = colDist;
@@ -72,7 +73,7 @@ boolean pixelPossible(PImage image, float[][] disparityMap, int radius, int thre
         counter++;
       }
       
-      if(counter >= 0.05*n)return true;
+      if(counter >= 0.1*n)return true;
     }
     a += da;
   }
@@ -84,10 +85,10 @@ boolean pixelPossible(PImage image, float[][] disparityMap, int radius, int thre
 
 boolean pixelValid(PImage image, float[][] disparityMap, boolean low, int x, int y) {
   int count = 0;
-  if (low && !pixelPossible(image, disparityMap, 30, 2, x, y))return false;
+  if (low && !pixelPossible(image, disparityMap, 20, 1, x, y))return false;
   for (int i = max(0, y - 1); i < min(image.height, y + 2); i++) {
     for (int j = max(0, x - 1); j < min(image.width, x + 2); j++) {
-      if (abs(disparityMap[i][j] - disparityMap[y][x]) < 2)count++;
+      if (abs(disparityMap[i][j] - disparityMap[y][x]) < 1)count++;
       if (count >= 5)return true;
     }
   }

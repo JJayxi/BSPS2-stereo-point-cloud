@@ -1,11 +1,8 @@
-import peasy.*;
-PeasyCam cam;
 
 void setup() {
   size(1400, 800);
-  //cam = new PeasyCam(this, 100);
-  //generateExportPCC();
-  displayDisparity();
+  generateExportPCC();
+  //displayDisparity();
 }
 
 void draw() {
@@ -14,10 +11,7 @@ void draw() {
 }
 
 void generateExportPCC() {
-  pointCloud = generatePointCloud("images/stereo4.jpg", 4, 5, 3);
-  pointCloud = rescale(pointCloud, 4);
-  export("cloud_noisy.ply", pointCloud);
-  //pointCloud = rescale(pointCloud, 500);
+  pipeline("images/stereo5.jpg", 0.3, 3, "cloud2.ply");
 }
 
 void displayDisparity() {
@@ -29,10 +23,10 @@ void displayDisparity() {
   PImage left = cropImage(image, 0, 0, image.width / 2, image.height);
   PImage right= cropImage(image, image.width / 2, 0, image.width / 2, image.height);
 
-  float[][] disparityMap = iterativeDisparityMap(left, right, 3);
+  float[][] disparityMap = iterativeDisparityMap(left, right, 2);
 
   PImage disparityImage = disparityMapToImage(disparityMap, scale);//findErrors(left, right, disparityMap, 100)
-  float[][] denoised = denoiseMap(left, disparityMap);
+  float[][] denoised = smoothMap(left, denoiseMap(left, disparityMap));
   PImage denoisedImage = disparityMapToImage(denoised, scale);
   
   //PImage edgeImage = edgeImage(left);
@@ -49,7 +43,7 @@ void pipeline(String stereoImagePath, float camDistance, float focalLength, Stri
   PImage left = cropImage(image, 0, 0, image.width / 2, image.height);
   PImage right= cropImage(image, image.width / 2, 0, image.width / 2, image.height);
   
-  float[][] disparityMap = iterativeDisparityMap(left, right, 3);
+  float[][] disparityMap = iterativeDisparityMap(left, right, 2);
   float[][] denoisedMap = denoiseMap(left, disparityMap);
   float[][] smoothedMap = smoothMap(left, denoisedMap);
   

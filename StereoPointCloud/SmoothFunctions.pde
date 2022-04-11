@@ -1,3 +1,3 @@
 float[][] smoothMap(PImage image, float[][] disparityMap) {
-  return disparityMap; 
+  return disparityMap; //gaussianBlur(disparityMap, 5); 
 }

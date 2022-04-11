@@ -22,7 +22,7 @@ ArrayList<Point> pointCloudFromDisparityMap(PImage image, float[][] disparityMap
   ArrayList<Point> pointCloud = new ArrayList<Point>();
   for (int i = 0; i < disparityMap.length; i++)
     for (int j = 0; j < disparityMap[0].length; j++) 
-      if (!Float.isNaN(disparityMap[i][j]) && abs(disparityMap[i][j]) > 4)
+      if (!Float.isNaN(disparityMap[i][j]) && (disparityMap[i][j] < -10 && disparityMap[i][j] > -80))
         pointCloud.add(pointFromDisparity(image.get(j, i), disparityMap[i][j], j, i, image.width, image.height, lensDistance, focalLength));
 
   return pointCloud;
@@ -38,18 +38,18 @@ Point pointFromDisparity(color col, float disparity, float x, float y, float ima
     
   float depth = disparityToDepth(disparity / imageWidth, lensDistance, focalLength);
   
-  return new Point(-xTan * depth, -yTan * depth, -depth, col);
+  return new Point(xTan * (depth + focalLength), -yTan *  (depth + focalLength), -depth, col);
 }
 
 float disparityToDepth(float disparity, float lensDistance, float focalLength) {
-  return - focalLength * lensDistance / disparity;
+  return -focalLength * lensDistance / disparity - focalLength;
 }
 
 void renderPointCloud(ArrayList<Point> pointCloud) {
   strokeWeight(2);
   for (Point p : pointCloud) {
     stroke(p.col);
-    point(p.x, p.y, -p.z);
+    point(p.x, p.y, p.z);
   }
 }
 
@@ -75,7 +75,7 @@ void export(String path, ArrayList<Point> pointCloud) {
   for(Point p : pointCloud) {
     sa[i] = p.x + " " + p.y + " " + p.z + " " + (int)red(p.col) + " " + (int)green(p.col) + " " + (int)blue(p.col);
     i++;
-    if(i % 1000 == 0)println("made " + i + " points");
+    if(i % 10000 == 0)println("made " + i + " points");
   }
   
   saveStrings(path, sa);
