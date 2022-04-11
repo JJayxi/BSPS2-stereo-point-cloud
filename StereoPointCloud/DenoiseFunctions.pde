@@ -1,3 +1,11 @@
+float[][] denoiseMap(PImage image, float[][] disparityMap) {
+  float[][] denoisedMap = denoiseMap(image, disparityMap, false, 30);
+  denoisedMap = denoiseMap(image, denoisedMap, true, 25);
+  denoisedMap = denoiseMap(image, denoisedMap, false, 30);
+ 
+  return denoisedMap;
+}
+
 float[][] denoiseMap(PImage image, float[][] disparityMap, boolean low, int n) {
   println("Denoising..");
   boolean[][] validityMap;

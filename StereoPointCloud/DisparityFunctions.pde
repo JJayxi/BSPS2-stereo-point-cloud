@@ -1,9 +1,9 @@
 float[][] iterativeDisparityMap(PImage left, PImage right, int scale) {  
   PImage leftRescaled = copy(left);
-  leftRescaled.resize(ceil(left.width / scale) + 1, ceil(left.height / scale) + 1);
+  leftRescaled.resize(left.width / scale + 1, left.height / scale + 1);
   
   PImage rightRescaled = copy(right);
-  rightRescaled.resize(ceil(right.width / scale) + 1, ceil(right.height / scale) + 1);
+  rightRescaled.resize(right.width / scale + 1, right.height / scale + 1);
   
   println("Generating Base Map..");
   float[][] baseMap = generateDisparityMap(leftRescaled, rightRescaled, 6);

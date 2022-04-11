@@ -1,5 +1,9 @@
 ArrayList<Point> pointCloud;
 
+ArrayList<Point> generatePointCloud(PImage image, float[][] disparityMap, float lensDistance, float focalLength) {
+  return pointCloudFromDisparityMap(image, disparityMap, lensDistance, focalLength); 
+}
+
 ArrayList<Point> generatePointCloud(String stereoImageFileName, float lensDistance, float focalLength, float scale) {
   PImage image = loadImage(stereoImageFileName);
   
