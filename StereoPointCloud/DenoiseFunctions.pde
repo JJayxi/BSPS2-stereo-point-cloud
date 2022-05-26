@@ -1,17 +1,17 @@
 float[][] denoiseMap(PImage image, float[][] disparityMap) {
   println("Denoising high frequency..");
-  float[][] denoisedMap = denoiseMap(image, disparityMap, false, 10);
+  float[][] denoisedMap = denoiseMap(image, disparityMap, false, 2);
   println("Denoising low frequency..");
   denoisedMap = denoiseMap(image, denoisedMap, true, 5);
-  denoisedMap = denoiseMap(image, denoisedMap, false, 10);
+  denoisedMap = denoiseMap(image, denoisedMap, false, 8);
  
   return denoisedMap;
 }
 
 float[][] denoiseMap(PImage image, float[][] disparityMap, boolean low, int n) {
-  
-  boolean[][] validityMap;
+  boolean[][] validityMap = null;
   float[][] denoisedMap = new float[image.height][image.width];
+  
   for (int i = 0; i < n; i++) {
     validityMap = validMap(image, disparityMap, low);
     disparityMap = denoiseStep(image, denoisedMap, disparityMap, validityMap);
@@ -86,8 +86,8 @@ boolean pixelValid(PImage image, float[][] disparityMap, boolean low, int x, int
   if (low && !pixelPossible(image, disparityMap, 20, 1, x, y))return false;
   for (int i = max(0, y - 1); i < min(image.height, y + 2); i++) {
     for (int j = max(0, x - 1); j < min(image.width, x + 2); j++) {
-      if (abs(disparityMap[i][j] - disparityMap[y][x]) < 1)count++;
-      if (count >= 5)return true;
+      if (abs(disparityMap[i][j] - disparityMap[y][x]) == 0)count++;
+      if (count == 5)return true;
     }
   }
   return false;

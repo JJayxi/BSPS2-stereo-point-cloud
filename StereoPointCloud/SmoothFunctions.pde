@@ -3,7 +3,7 @@ float[][] smoothMap(PImage image, float[][] disparityMap) {
   float[][] smoothed = new float[image.height][image.width];
   for (int i = 0; i <  image.height; i++) {
     for (int j = 0; j < image.width; j++) {
-      smoothed[i][j] = smoothSimilar(image, disparityMap, j, i, 20, 2);
+      smoothed[i][j] = smoothSimilar(image, disparityMap, j, i, ceil((image.width + image.height) * 0.015), 2);
     }
   }
 

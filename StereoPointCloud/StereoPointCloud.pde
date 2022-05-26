@@ -7,8 +7,8 @@ void setup() {
 }
 
 void imagesForReport() {
-  int scale = 2;
-  PImage image = loadImage("images/stereo4.png");
+  int scale = 3;
+  PImage image = loadImage("images/stereo5.png");
 
   image.resize(image.width / scale, image.height / scale);
 
@@ -18,13 +18,16 @@ void imagesForReport() {
   ///TO MAKE IMAGES FOR REPORT
   left.save("output/left.png");
   right.save("output/right.png");
-  float[][] disparityMap = iterativeDisparityMap(left, right, 2);
-  PImage disparityImage = disparityMapToImage(disparityMap, scale);
-  disparityImage.save("output/disparity.png");
+  float[][] disparityMap = iterativeDisparityMap(left, right, 1);
+  disparityMapToImage(disparityMap, scale).save("output/1unprocessed.png");
+  float[][] denoisedMap = denoiseMap(left, disparityMap);
+  disparityMapToImage(denoisedMap, scale).save("output/2denoised.png");
+  float[][] smoothedMap = smoothMap(left, denoisedMap);
+  disparityMapToImage(smoothedMap, scale).save("output/3smoothed.png");
 }
 
 void generateExportPCC() {
-  pipeline("images/stereo9.png", 1, 2, "cloud.ply");
+  pipeline("images/stereo5.png", 1, 2, "output/clouds/cloud5_orthographic.ply");
 }
 
 void displayDisparity() {
@@ -39,11 +42,16 @@ void displayDisparity() {
   
   
 
-  float[][] disparityMap = iterativeDisparityMap(left, right, 2);
+  float[][] disparityMap = iterativeDisparityMap(left, right, 12);
+  PImage disparityImage = disparityMapToImage(disparityMap, scale);
+  disparityMap = denoiseMap(left, disparityMap);
 
-  PImage disparityImage = disparityMapToImage(disparityMap, scale);//findErrors(left, right, disparityMap, 100)
-  float[][] denoised = smoothMap(left, denoiseMap(left, disparityMap));
+  float[][] denoised = smoothMap(left, disparityMap);//smoothMap(left, denoiseMap(left, disparityMap));
+  
   PImage denoisedImage = disparityMapToImage(denoised, scale);
+  
+  disparityImage.save("unsmoothed.png");
+  denoisedImage.save("smoothed.png");
   
   //PImage edgeImage = edgeImage(left);
   image(disparityImage, 0, 0, left.width, left.height); 
@@ -60,9 +68,9 @@ void pipeline(String stereoImagePath, float camDistance, float focalLength, Stri
   PImage left = cropImage(image, 0, 0, image.width / 2, image.height);
   PImage right= cropImage(image, image.width / 2, 0, image.width / 2, image.height);
   
-  float[][] disparityMap = iterativeDisparityMap(left, right, 3);
+  float[][] disparityMap = iterativeDisparityMap(left, right, 2);
   float[][] denoisedMap = denoiseMap(left, disparityMap);
-  float[][] smoothedMap = smoothMap(left, denoisedMap);
+  float[][] smoothedMap = denoisedMap; //smoothMap(left, denoisedMap);
   
   ArrayList<Point> pointCloud = generatePointCloud(left, smoothedMap, camDistance, focalLength);
   export(pointCloudExportPath, pointCloud);

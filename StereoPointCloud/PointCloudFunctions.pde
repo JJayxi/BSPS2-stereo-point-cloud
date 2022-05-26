@@ -12,7 +12,7 @@ ArrayList<Point> generatePointCloud(String stereoImageFileName, float lensDistan
   PImage left = cropImage(image, 0, 0, image.width / 2, image.height);
   PImage right= cropImage(image, image.width / 2, 0, image.width / 2, image.height);
   
-  float[][] disparityMap = iterativeDisparityMap(left, right, 3); //findErrors(left, right, iterativeDisparityMap(left, right, 3), 70);
+  float[][] disparityMap = iterativeDisparityMap(left, right, 2); //findErrors(left, right, iterativeDisparityMap(left, right, 3), 70);
   ArrayList<Point> pointCloud = pointCloudFromDisparityMap(left, disparityMap, lensDistance, focalLength);
   
   pointCloud = rescale(pointCloud, 20);
@@ -25,22 +25,26 @@ ArrayList<Point> pointCloudFromDisparityMap(PImage image, float[][] disparityMap
   for (int i = 0; i < disparityMap.length; i++)
     for (int j = 0; j < disparityMap[0].length; j++) 
       if (!Float.isNaN(disparityMap[i][j]) && (disparityMap[i][j] < -5 && disparityMap[i][j] > -image.width * 0.1))
-        pointCloud.add(pointFromDisparity(image.get(j, i), disparityMap[i][j], j, i, image.width, image.height, lensDistance, focalLength));
+        pointCloud.add(pointFromDisparity(image, disparityMap[i][j], j, i, lensDistance, focalLength));
 
   return pointCloud;
 }
 
-Point pointFromDisparity(color col, float disparity, float x, float y, float imageWidth, float imageHeight, float lensDistance, float focalLength) {
+Point pointFromDisparity(PImage image, float disparity, int x, int y, float lensDistance, float focalLength) {
   //normalize position to center
-  x = 2 * x / imageWidth - 1;
-  y = 2 * y / imageHeight- 1;
-  //find tangent of angle of that point on the image according to center of camera
-  float xTan = x / focalLength;
-  float yTan = y / focalLength * (imageHeight / imageWidth);
-    
-  float depth = disparityToDepth(disparity / imageWidth, lensDistance, focalLength);
-  
-  return new Point(xTan * (depth + focalLength), -yTan *  (depth + focalLength), -depth, col);
+  float nx = 2 * (float)x / (float)image.width  - 1;
+  float ny = 2 * (float)y / (float)image.height - 1;
+  //find tangent of angle
+  float xTan = nx / focalLength;
+  float yTan = ny / focalLength * (image.height / (float)image.width);
+  //compute depth
+  float depth = disparityToDepth(disparity / image.width, lensDistance, focalLength);
+  //return new Point(x, y, depth, image.get(x, y));
+  return new Point(
+    xTan * (depth + focalLength),
+    -yTan *  (depth + focalLength),
+    -depth,
+    image.get(x, y));
 }
 
 float disparityToDepth(float disparity, float lensDistance, float focalLength) {
