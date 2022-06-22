@@ -1,9 +1,11 @@
 float[][] denoiseMap(PImage image, float[][] disparityMap) {
   println("Denoising high frequency..");
-  float[][] denoisedMap = denoiseMap(image, disparityMap, false, 2);
+  float[][] denoisedMap = denoiseMap(image, disparityMap, false, 6);
   println("Denoising low frequency..");
-  denoisedMap = denoiseMap(image, denoisedMap, true, 5);
-  denoisedMap = denoiseMap(image, denoisedMap, false, 8);
+  denoisedMap = denoiseMap(image, denoisedMap, true, 4);
+  //denoisedMap = denoiseMap(image, denoisedMap, false, 8);
+  
+  
  
   return denoisedMap;
 }

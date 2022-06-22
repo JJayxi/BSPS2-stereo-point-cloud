@@ -24,7 +24,7 @@ ArrayList<Point> pointCloudFromDisparityMap(PImage image, float[][] disparityMap
   ArrayList<Point> pointCloud = new ArrayList<Point>();
   for (int i = 0; i < disparityMap.length; i++)
     for (int j = 0; j < disparityMap[0].length; j++) 
-      if (!Float.isNaN(disparityMap[i][j]) && (disparityMap[i][j] < -5 && disparityMap[i][j] > -image.width * 0.1))
+      if (random(100) < 84 && !Float.isNaN(disparityMap[i][j]) && (disparityMap[i][j] < -19 && disparityMap[i][j] > -image.width*0.1))
         pointCloud.add(pointFromDisparity(image, disparityMap[i][j], j, i, lensDistance, focalLength));
 
   return pointCloud;
